@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: mytube-api
+
+  datasource:
+    jndi-name: java:/jdbc/MyDS
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        connection:
+          handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_STATEMENT
+        transaction:
+          coordinator_class: jta
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        current_session_context_class: jta
+  jta:
+    enabled: true
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-master.yaml
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic: "video-uploaded-topic"
+
+  quartz:
+    job-store-type: memory
+    scheduler-name: QuartzScheduler
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            redirect-uri: ${CLIENT_URI}
+            scope:
+              - openid
+              - email
+              - profile
+
+jwt:
+  secret: ${JWT_SECRET:5e1585e6cf95c29e289e5d3c14891cd9318174224f3587c77e2871a25b2b5102}
+  accessExpiration: ${JWT_ACCESS_EXPIRATION:3600000}
+  refreshExpiration: ${JWT_REFRESH_EXPIRATION:3000000000}
+minio:
+  host: ${MINIO_HOST:http://localhost}
+  apiPort: ${MINIO_API_PORT:9000}
+  bucket-name: ${MINIO_BUCKET_NAME:videos}
+  username: ${MINIO_USER:minioadmin}
+  password: ${MINIO_PASSWORD:minioadmin}
+server:
+  port: ${SERVER_PORT:8081}
