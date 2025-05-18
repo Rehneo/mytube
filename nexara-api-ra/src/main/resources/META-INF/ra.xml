@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="https://jakarta.ee/xml/ns/jakartaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/connector_2_1.xsd"
+           version="2.1">
+
+    <display-name>Nexara Api Resource Adapter</display-name>
+    <vendor-name>Nexara</vendor-name>
+    <eis-type>Nexara Api</eis-type>
+    <resourceadapter-version>1.0</resourceadapter-version>
+    <license>
+        <description>Sample License</description>
+        <license-required>false</license-required>
+    </license>
+
+    <resourceadapter>
+        <resourceadapter-class>com.rehneo.nexara.api.ra.impl.NexaraApiResourceAdapter</resourceadapter-class>
+
+        <outbound-resourceadapter>
+            <connection-definition>
+                <connectionfactory-interface>com.rehneo.nexara.api.ra.NexaraApiConnectionFactory
+                </connectionfactory-interface>
+                <connectionfactory-impl-class>com.rehneo.nexara.api.ra.impl.NexaraApiConnectionFactoryImpl
+                </connectionfactory-impl-class>
+                <connection-interface>com.rehneo.nexara.api.ra.NexaraApiConnection</connection-interface>
+                <connection-impl-class>rcom.rehneo.nexara.api.ra.impl.NexaraApiConnectionImpl</connection-impl-class>
+                <managedconnectionfactory-class>com.rehneo.nexara.api.ra.impl.NexaraApiManagedConnectionFactory
+                </managedconnectionfactory-class>
+            </connection-definition>
+
+            <transaction-support>NoTransaction</transaction-support>
+
+        </outbound-resourceadapter>
+    </resourceadapter>
+</connector>
