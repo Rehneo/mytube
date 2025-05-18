@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: moderation-service
+  datasource:
+    jndi-name: java:/jdbc/MyDS
+    driver-class-name: org.postgresql.Driver
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+  liquibase:
+    change-log: classpath:/db/changelog/changelog-master.yaml
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        connection:
+          handling_mode: DELAYED_ACQUISITION_AND_RELEASE_AFTER_STATEMENT
+        transaction:
+          coordinator_class: jta
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        current_session_context_class: jta
+  jta:
+    enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic: "video-uploaded-topic"
+    consumer:
+      group-id: video-uploaded-group
+
+nexara:
+  api:
+    key: nx-3UT5BGShFHqzTgigmgsaCWaM
+
+minio:
+  host: ${MINIO_HOST:http://localhost}
+  apiPort: ${MINIO_API_PORT:9000}
+  bucket-name: ${MINIO_BUCKET_NAME:videos}
+  username: ${MINIO_USER:minioadmin}
+  password: ${MINIO_PASSWORD:minioadmin}
+server:
+  port: ${SERVER_PORT:8083}
