@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 
 @Service
@@ -40,14 +41,29 @@ public class VideoService {
             throw new AccessDeniedException("User is banned");
         }
 
-        if(validationService.containsForbiddenWord(createDto.getDescription().concat(createDto.getName()))){
+        if (validationService.containsForbiddenWord(createDto.getDescription().concat(createDto.getName()))) {
             throw new BadRequestException("Input data contains forbidden words");
         }
 
         int nextId = videoRepository.getNextVideoId();
         videoStorage.save(nextId, file.getInputStream(), file.getSize());
+        Video video = save(nextId, createDto, file.getInputStream(), file.getSize(), user);
+
+        kafkaProducerService.sendVideoUploadedEvent(nextId);
+
+        return mapper.mapForUser(video);
+    }
+
+    public Video save(
+            Integer videoId,
+            VideoCreateDto createDto,
+            InputStream inputStream,
+            long size,
+            User user
+    ) throws Exception {
+        videoStorage.save(videoId, inputStream, size);
         Video video = Video.builder()
-                .id(nextId)
+                .id(videoId)
                 .name(createDto.getName())
                 .status(VideoStatus.ACTIVE)
                 .user(user)
@@ -59,13 +75,10 @@ public class VideoService {
         try {
             videoRepository.save(video);
         } catch (Exception e) {
-            videoStorage.remove(nextId);
+            videoStorage.remove(videoId);
             throw e;
         }
-
-        kafkaProducerService.sendVideoUploadedEvent(nextId);
-
-        return mapper.mapForUser(video);
+        return video;
     }
 
     public byte[] getVideoFile(int id) throws Exception {

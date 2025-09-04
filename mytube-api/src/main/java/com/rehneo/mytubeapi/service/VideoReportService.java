@@ -12,7 +12,6 @@ import com.rehneo.mytubeapi.error.ResourceNotFoundException;
 import com.rehneo.mytubeapi.mapper.VideoReportMapper;
 import com.rehneo.mytubeapi.repository.VideoReportRepository;
 import com.rehneo.mytubeapi.repository.VideoRepository;
-import com.rehneo.mytubeapi.user.User;
 import com.rehneo.mytubeapi.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,17 +31,16 @@ public class VideoReportService {
     private final VideoService videoService;
 
     @Transactional
-    public VideoReportUserReadDto report(VideoReportCreateDto dto) {
+    public VideoReportUserReadDto report(VideoReportCreateDto dto, String username) {
         Video video = videoRepository.findById(dto.getVideoId()).orElseThrow(
                 () -> new ResourceNotFoundException("Video with id " + dto.getVideoId() + " not found")
         );
         if(video.getStatus() == VideoStatus.DELETED){
             throw new ConflictException("Video with id " + dto.getVideoId() + " is deleted");
         }
-        User user = userService.getCurrentUser();
         VideoReport videoReport = VideoReport.builder()
                 .description(dto.getDescription())
-                .sender(user)
+                .sender(userService.getByUsername(username))
                 .status(VideoReportStatus.PENDING)
                 .video(video)
                 .build();

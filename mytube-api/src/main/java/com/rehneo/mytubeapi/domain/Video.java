@@ -36,7 +36,7 @@ public class Video {
     private String description;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "channel_id")
     private User user;
 

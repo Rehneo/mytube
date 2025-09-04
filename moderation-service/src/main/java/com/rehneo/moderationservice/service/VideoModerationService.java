@@ -29,7 +29,7 @@ public class VideoModerationService {
     private String nexaraApiKey;
 
     @Transactional
-    public void processModeration(Integer videoId) {
+    public boolean processModeration(Integer videoId) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new VideoNotFoundException(videoId));
 
@@ -64,13 +64,7 @@ public class VideoModerationService {
         }
 
         log.info("transcribed video with id: {}, text: {}", videoId, text);
-
-        if (textValidationService.containsForbiddenWord(text)) {
-            video.setModerationStatus(ModerationStatus.REJECTED);
-        } else {
-            video.setModerationStatus(ModerationStatus.PASSED);
-        }
-        videoRepository.save(video);
+        return textValidationService.containsForbiddenWord(text);
     }
 
     private NexaraApiConnection getConnection() {

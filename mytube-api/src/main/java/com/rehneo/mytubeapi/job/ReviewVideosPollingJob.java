@@ -22,13 +22,11 @@ public class ReviewVideosPollingJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) {
-        log.info("Starting review videos polling job");
         ZonedDateTime threshold = ZonedDateTime.now().minusMinutes(15L);
         List<Video> videos = videoRepository.findAllByModerationStatusAndOlderThan(
                 ModerationStatus.REVIEW,
                 threshold
         );
         videos.forEach(video -> kafkaProducerService.sendVideoUploadedEvent(video.getId()));
-        log.info("Finished review videos polling job");
     }
 }

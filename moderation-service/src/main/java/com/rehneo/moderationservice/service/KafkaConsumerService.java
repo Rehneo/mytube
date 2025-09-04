@@ -21,13 +21,14 @@ import java.util.concurrent.Executors;
 @Service
 @RequiredArgsConstructor
 public class KafkaConsumerService {
-    private final VideoModerationService videoModerationService;
-
+    private final CamundaClient camundaClient;
+    private final int RETRY_COUNT = 3;
     private final KafkaConsumer<String, VideoUploadedEvent> kafkaConsumer;
     @Value("${spring.kafka.topic}")
     private String topic;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private volatile boolean running = true;
+    private int retryCount;
 
     @PostConstruct
     public void start() {
@@ -36,13 +37,23 @@ public class KafkaConsumerService {
             try {
                 while (running) {
                     ConsumerRecords<String, VideoUploadedEvent> records = kafkaConsumer.poll(Duration.ofSeconds(1));
+                    retryCount = RETRY_COUNT;
                     for (ConsumerRecord<String, VideoUploadedEvent> record : records) {
-                        try {
-                            log.info("Received video with id: {}, starting processing", record.value().getVideoId());
-                            videoModerationService.processModeration(record.value().getVideoId());
-                            log.info("Finished processing video with id: {}", record.value().getVideoId());
-                        } catch (Exception processingEx) {
-                            log.error("Failed processing video id {}: ", record.value().getVideoId(), processingEx);
+                        while (retryCount > 0) {
+                            try {
+                                log.info("Received video with id: {}, starting processing", record.value().getVideoId());
+                                camundaClient.sendMessage(record.value().getVideoId());
+                                retryCount = 0;
+                            } catch (Exception processingEx) {
+                                retryCount--;
+                                if (retryCount == 0) {
+                                    log.error(
+                                            "Failed processing video id {}: ",
+                                            record.value().getVideoId(),
+                                            processingEx
+                                    );
+                                }
+                            }
                         }
                     }
                 }

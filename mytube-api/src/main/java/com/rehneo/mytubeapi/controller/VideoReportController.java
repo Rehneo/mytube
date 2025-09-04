@@ -22,12 +22,6 @@ import org.springframework.web.bind.annotation.*;
 public class VideoReportController {
     private final VideoReportService service;
 
-    @PostMapping
-    @PreAuthorize("hasAuthority('USER')")
-    public ResponseEntity<VideoReportUserReadDto> report(@RequestBody VideoReportCreateDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.report(dto));
-    }
-
     @PatchMapping("/{id}/reject")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<VideoReportAdminReadDto> reject(@PathVariable int id) {
